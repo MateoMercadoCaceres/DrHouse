@@ -1,0 +1,53 @@
+version: "3.9"
+  
+services:
+  backend:
+    build: 
+      context: ../drhouse-backend
+      dockerfile: Dockerfile
+    ports:
+      - "1712:1712"
+    depends_on:
+      - mongo
+      - models-api
+    environment:
+      - PORT=1712
+      - HOST=0.0.0.0
+      - MONGO_URL=mongodb://mongo:27017
+      - DB_NAME=userapi
+      - DIAGNOSTIC_API_BASE_URL=http://models-api:2342/api/v1
+      - JWT_SECRET_KEY=eosEN6JmIDatNg
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+    networks:
+      - appnet
+
+  models-api:
+    build: 
+      context: ../drhouse-models
+      dockerfile: Dockerfile
+    ports:
+      - "2342:2342"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GENAI_API_KEY=${GENAI_API_KEY}
+      - PORT=2342
+      - HOST=0.0.0.0
+    networks:
+      - appnet
+
+  mongo:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - appnet
+
+networks:
+  appnet:
+
+volumes:
+  mongo_data:
